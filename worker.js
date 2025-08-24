@@ -1,8 +1,8 @@
 addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request, event.env));
+  event.respondWith(handleRequest(event.request));
 });
 
-async function handleRequest(request, env) {
+async function handleRequest(request) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
@@ -35,8 +35,9 @@ async function handleRequest(request, env) {
   try {
     const orderDetails = await request.json();
 
-    const BOT_TOKEN = env.BOT_TOKEN;
-    const CHAT_ID = env.CHAT_ID;
+    // الحصول على المتغيرات من environment variables
+    const BOT_TOKEN = BOT_TOKEN; // سيتعرف عليها Cloudflare تلقائياً
+    const CHAT_ID = CHAT_ID;     // سيتعرف عليها Cloudflare تلقائياً
 
     // بناء رسالة تيليجرام
     let messageText = '<b>✅ طلب جديد من السوبر ماركت:</b>\n\n';
@@ -44,14 +45,11 @@ async function handleRequest(request, env) {
     messageText += `<b>- الهاتف:</b> ${orderDetails.customer.phone}\n\n`;
     messageText += `<b><u>المنتجات:</u></b>\n`;
 
-    // **التعديل هنا:** استخدام حلقة for..of لمعالجة المصفوفة
     for (const item of orderDetails.items) {
       messageText += `• ${item.name} (الكمية: ${item.quantity}) - السعر: ${(item.price * item.quantity).toLocaleString('ar-SY')} د.ع\n`;
     }
     
-    // استخدام totalFormatted من البيانات المرسلة
     messageText += `\n<b><u>المجموع الإجمالي: ${orderDetails.totalFormatted}</u></b>`;
-
 
     const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
     
